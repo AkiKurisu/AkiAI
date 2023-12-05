@@ -1,4 +1,3 @@
-using Kurisu.AkiBT;
 using Kurisu.AkiBT.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -32,7 +31,7 @@ namespace Kurisu.AkiAI.Editor
             GUI.backgroundColor = task.Enabled ? AkiGreen : AkiBlue;
             if (GUI.Button(rect, "Debug Task Behavior"))
             {
-                GraphEditorWindow.Show((IBehaviorTree)fieldInfo.GetValue(task));
+                GraphEditorWindow.Show(task.InstanceTree);
             }
             GUI.backgroundColor = color;
             rect.y += rect.height + EditorGUIUtility.standardVerticalSpacing;

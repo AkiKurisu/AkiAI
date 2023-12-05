@@ -16,6 +16,7 @@ namespace Kurisu.AkiAI
         [SerializeField]
         private BehaviorTreeSO behaviorTree;
         private BehaviorTreeSO instanceTree;
+        public BehaviorTreeSO InstanceTree => instanceTree;
         public bool Enabled { get; private set; }
         public void Init(IAIHost host)
         {
