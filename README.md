@@ -41,8 +41,6 @@ AkiAI 是一个个人向、实验性的游戏AI框架，可用于设计和开发
 ```C#
 public interface ICustomContext : IAIContext
 {
-    IControlAnim Anim { get; }
-    IControlAIGirl Girl { get; }
     NavMeshAgent NavAgent { get; }
 }
 public class CustomAgent : AIAgent<ICustomContext>, ICustomContext
