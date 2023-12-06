@@ -35,3 +35,62 @@ AkiAI 是一个个人向、实验性的游戏AI框架，可用于设计和开发
 ### 行为任务
 行为任务应当服务于一个独立的`行为（Action）`
 
+## 如何使用
+
+1. 继承AIAgent
+```C#
+public interface ICustomContext : IAIContext
+{
+    IControlAnim Anim { get; }
+    IControlAIGirl Girl { get; }
+    NavMeshAgent NavAgent { get; }
+}
+public class CustomAgent : AIAgent<ICustomContext>, ICustomContext
+{
+}
+```
+2. 创建TaskID静态类
+```C#
+[TaskIDHost]
+public class CustomTasks
+{
+    public static string TaskA = "TaskA";
+    public static string TaskB = "TaskB";
+}
+```
+3. 继承AIAction和AIGoal
+
+```C#
+public abstract class CustomAction : AIAction<ICustomContext> { }
+public abstract class CustomGoal : AIGoal<ICustomContext> { }
+```
+
+4. Action中控制Task
+```C#
+public class DoSomething : CustomAction
+{
+    protected sealed override void SetupDerived()
+    {
+        Preconditions["CanDo"] = true;
+    }
+    protected sealed override void SetupEffects()
+    {
+        Effects["SomeEffect"] = true;
+    }
+    public sealed override float GetCost()
+    {
+        return 5;
+    }
+    protected sealed override void OnActivateDerived()
+    {
+        Host.GetTask(CustomTasks.TaskA).Start();
+    }
+    protected sealed override void OnDeactivateDerived()
+    {
+        Host.GetTask(CustomTasks.TaskA).Stop();
+    }
+}
+```
+
+5. 编辑器内挂载CustomAgent并添加BehaviorTask，绑定`CustomTasks`中的TaskID
+6. (可选)自定义脚本添加``IAITask``
