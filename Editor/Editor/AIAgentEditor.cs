@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Reflection;
 using Kurisu.GOAP;
 using Kurisu.GOAP.Editor;
@@ -17,6 +18,30 @@ namespace Kurisu.AkiAI.Editor
             GUILayout.Label("AI Status       " + (Agent.enabled ?
              (Agent.IsAIEnabled ? "<color=#92F2FF>Running</color>" : "<color=#FFF892>Pending</color>")
              : "<color=#FF787E>Disabled</color>"), new GUIStyle(GUI.skin.label) { richText = true });
+            if (Application.isPlaying)
+            {
+                var tasks = Agent.GetAllTasks();
+                if (tasks.Any())
+                {
+                    GUILayout.Label($"Tasks:", new GUIStyle(GUI.skin.label) { fontSize = 15 });
+                }
+                foreach (var task in tasks)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label($"{task.TaskID}");
+                    var rect = GUILayoutUtility.GetLastRect();
+                    rect.x += 200;
+                    if (task.IsPersistent)
+                    {
+                        GUI.Label(rect, "Status    <color=#A35EFF>Persistent</color>", new GUIStyle(GUI.skin.label) { richText = true });
+                    }
+                    else
+                    {
+                        GUI.Label(rect, $"Status    {GetStatus(task.Status)}", new GUIStyle(GUI.skin.label) { richText = true });
+                    }
+                    GUILayout.EndHorizontal();
+                }
+            }
             serializedObject.UpdateIfRequiredOrScript();
             SerializedProperty iterator = serializedObject.GetIterator();
             iterator.NextVisible(true);
@@ -38,6 +63,21 @@ namespace Kurisu.AkiAI.Editor
                     GOAPEditorWindow.ShowEditorWindow((IGOAPSet)typeof(AIAgent).GetField("dataSet", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(target));
                 }
                 GUI.backgroundColor = color;
+            }
+        }
+        private string GetStatus(TaskStatus status)
+        {
+            if (status == TaskStatus.Enabled)
+            {
+                return "<color=#92F2FF>Running</color>";
+            }
+            else if (status == TaskStatus.Pending)
+            {
+                return "<color=#FFF892>Pending</color>";
+            }
+            else
+            {
+                return "<color=#FF787E>Disabled</color>";
             }
         }
     }

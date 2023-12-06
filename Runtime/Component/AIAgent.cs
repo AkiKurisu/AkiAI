@@ -43,12 +43,7 @@ namespace Kurisu.AkiAI
         {
             foreach (var task in behaviorTasks)
             {
-                task.Init(this);
-                taskMap.Add(task.IsPersistent ? $"Persistent{task.GetHashCode()}" : task.TaskID, task);
-                if (task.IsPersistent && IsAIEnabled)
-                {
-                    task.Start();
-                }
+                AddTask(task);
             }
         }
         protected void Update()
@@ -62,7 +57,7 @@ namespace Kurisu.AkiAI
         {
             foreach (var task in taskMap.Values)
             {
-                if (task.Enabled) task.Tick();
+                if (task.Status == TaskStatus.Enabled) task.Tick();
             }
         }
         protected virtual void OnUpdate() { }
@@ -72,7 +67,7 @@ namespace Kurisu.AkiAI
             IsAIEnabled = true;
             foreach (var task in taskMap.Values)
             {
-                if (task.IsPersistent)
+                if (task.IsPersistent || task.Status == TaskStatus.Pending)
                     task.Start();
             }
         }
@@ -80,7 +75,12 @@ namespace Kurisu.AkiAI
         {
             planner.enabled = false;
             IsAIEnabled = false;
-            foreach (var task in taskMap.Values) task.Stop();
+            foreach (var task in taskMap.Values)
+            {
+                //Pend running tasks
+                if (task.Status == TaskStatus.Enabled)
+                    task.Pause();
+            }
         }
         protected void OnEnable()
         {
@@ -96,12 +96,21 @@ namespace Kurisu.AkiAI
         }
         public void AddTask(IAITask task)
         {
+            if (!task.IsPersistent && taskMap.ContainsKey(task.TaskID))
+            {
+                Debug.LogWarning($"Already contained task with same id: {task.TaskID}");
+                return;
+            }
             task.Init(this);
-            taskMap.Add(task.IsPersistent ? $"Persistent{task.GetHashCode()}" : task.TaskID, task);
+            taskMap.Add(task.TaskID, task);
             if (task.IsPersistent && IsAIEnabled)
             {
                 task.Start();
             }
+        }
+        public IEnumerable<IAITask> GetAllTasks()
+        {
+            return taskMap.Values;
         }
     }
     public abstract class AIAgent<T> : AIAgent, IAIHost<T> where T : IAIContext

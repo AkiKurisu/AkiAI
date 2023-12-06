@@ -4,8 +4,24 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 namespace Kurisu.AkiAI
 {
+    public abstract class AITask
+    {
+        public TaskStatus Status { get; private set; }
+        public void Stop()
+        {
+            Status = TaskStatus.Disabled;
+        }
+        public void Start()
+        {
+            Status = TaskStatus.Enabled;
+        }
+        public void Pause()
+        {
+            Status = TaskStatus.Pending;
+        }
+    }
     [Serializable]
-    public class BehaviorTask : IAITask
+    public class BehaviorTask : AITask, IAITask
     {
         [SerializeField, TaskID]
         private string taskID;
@@ -17,21 +33,12 @@ namespace Kurisu.AkiAI
         private BehaviorTreeSO behaviorTree;
         private BehaviorTreeSO instanceTree;
         public BehaviorTreeSO InstanceTree => instanceTree;
-        public bool Enabled { get; private set; }
         public void Init(IAIHost host)
         {
             instanceTree = Object.Instantiate(behaviorTree);
             foreach (var variable in instanceTree.SharedVariables)
                 variable.MapTo(host.BlackBoard);
             instanceTree.Init(host.Object);
-        }
-        public void Stop()
-        {
-            Enabled = false;
-        }
-        public void Start()
-        {
-            Enabled = true;
         }
         public void Tick()
         {
