@@ -60,7 +60,11 @@ namespace Kurisu.AkiAI.Editor
                 GUI.backgroundColor = AkiBlue;
                 if (GUILayout.Button("Edit GOAP Set"))
                 {
-                    GOAPEditorWindow.ShowEditorWindow((IGOAPSet)typeof(AIAgent).GetField("dataSet", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(target));
+                    var dataSet = (IGOAPSet)typeof(AIAgent).GetField("dataSet", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(target);
+                    if (dataSet != null)
+                        GOAPEditorWindow.ShowEditorWindow(dataSet);
+                    else
+                        Debug.LogError("Can not edit since no goap set is referenced!");
                 }
                 GUI.backgroundColor = color;
             }

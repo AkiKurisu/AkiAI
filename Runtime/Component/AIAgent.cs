@@ -9,8 +9,6 @@ namespace Kurisu.AkiAI
     public abstract class AIAgent : MonoBehaviour, IAIHost
     {
         [SerializeField]
-        private BehaviorTask[] behaviorTasks;
-        [SerializeField]
         private GOAPSet dataSet;
         protected GOAPSet DataSet => dataSet;
         private GOAPPlanner planner;
@@ -22,30 +20,23 @@ namespace Kurisu.AkiAI
         public virtual GameObject Object => gameObject;
         private AIBlackBoard blackBoard;
         public IAIBlackBoard BlackBoard => blackBoard;
+        public WorldState WorldState { get; private set; }
         public abstract IAIContext Context { get; }
         protected void Awake()
         {
+            WorldState = GetComponent<WorldState>();
             blackBoard = GetComponent<AIBlackBoard>();
             planner = GetComponent<GOAPPlanner>();
             OnAwake();
         }
         protected virtual void OnAwake() { }
-        protected void Start()
+        protected virtual void Start()
         {
-            SetupBehaviorTree();
             SetupGOAP();
             OnStart();
         }
         protected virtual void OnStart() { }
         protected abstract void SetupGOAP();
-
-        private void SetupBehaviorTree()
-        {
-            foreach (var task in behaviorTasks)
-            {
-                AddTask(task);
-            }
-        }
         protected void Update()
         {
             if (!IsAIEnabled) return;
@@ -90,9 +81,9 @@ namespace Kurisu.AkiAI
         {
             DisableAI();
         }
-        public IAITask GetTask(string girlTaskID)
+        public IAITask GetTask(string taskID)
         {
-            return taskMap[girlTaskID];
+            return taskMap[taskID];
         }
         public void AddTask(IAITask task)
         {
@@ -113,6 +104,10 @@ namespace Kurisu.AkiAI
             return taskMap.Values;
         }
     }
+    /// <summary>
+    /// AI Agent for custom context (eg. Data model, gameplay components)
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class AIAgent<T> : AIAgent, IAIHost<T> where T : IAIContext
     {
         public sealed override IAIContext Context => TContext;
@@ -131,6 +126,28 @@ namespace Kurisu.AkiAI
             }
             Planner.InjectGoals(goals);
             Planner.InjectActions(actions);
+        }
+    }
+    /// <summary>
+    /// AI Agent embedding Behavior Tasks
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class BehaviorBasedAIAgent<T> : AIAgent<T> where T : IAIContext
+    {
+        [SerializeField]
+        private BehaviorTask[] behaviorTasks;
+        protected sealed override void Start()
+        {
+            SetupBehaviorTree();
+            SetupGOAP();
+            OnStart();
+        }
+        private void SetupBehaviorTree()
+        {
+            foreach (var task in behaviorTasks)
+            {
+                AddTask(task);
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using Kurisu.GOAP;
 using UnityEngine;
 namespace Kurisu.AkiAI
 {
@@ -6,9 +7,10 @@ namespace Kurisu.AkiAI
     {
         IAIContext Context { get; }
         IAIBlackBoard BlackBoard { get; }
+        WorldState WorldState { get; }
         GameObject Object { get; }
         Transform Transform { get; }
-        IAITask GetTask(string girlTaskID);
+        IAITask GetTask(string taskID);
         void AddTask(IAITask task);
         /// <summary>
         /// Whether ai agent is enabled
