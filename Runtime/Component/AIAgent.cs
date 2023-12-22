@@ -12,7 +12,7 @@ namespace Kurisu.AkiAI
         private GOAPSet dataSet;
         protected GOAPSet DataSet => dataSet;
         private GOAPPlanner planner;
-        protected GOAPPlanner Planner => planner;
+        public GOAPPlanner Planner => planner;
         private readonly Dictionary<string, IAITask> taskMap = new();
         protected Dictionary<string, IAITask> TaskMap => taskMap;
         public bool IsAIEnabled { get; private set; }
