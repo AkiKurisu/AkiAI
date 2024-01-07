@@ -4,9 +4,13 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 namespace Kurisu.AkiAI
 {
-    public abstract class AITask
+    /// <summary>
+    /// Task controlled with external state machine
+    /// </summary>
+    public abstract class StatusTask
     {
         public TaskStatus Status { get; private set; }
+        #region  Status controlled by agent
         public void Stop()
         {
             Status = TaskStatus.Disabled;
@@ -19,9 +23,14 @@ namespace Kurisu.AkiAI
         {
             Status = TaskStatus.Pending;
         }
+        #endregion
     }
+    /// <summary>
+    /// Task to run a behavior tree inside a agent-authority state machine.
+    /// Whether behavior tree is failed or succeed will not affect task status. 
+    /// </summary>
     [Serializable]
-    public class BehaviorTask : AITask, IAITask
+    public class BehaviorTask : StatusTask, IAITask
     {
         [SerializeField, TaskID]
         private string taskID;
@@ -29,13 +38,23 @@ namespace Kurisu.AkiAI
         [SerializeField]
         private bool isPersistent;
         public bool IsPersistent => isPersistent;
+#if AKIAI_TASK_JSON_SERIALIZATION
+        [SerializeField]
+        private TextAsset behaviorTreeSerializeData;
+#else
         [SerializeField]
         private BehaviorTreeSO behaviorTree;
+#endif
         private BehaviorTreeSO instanceTree;
         public BehaviorTreeSO InstanceTree => instanceTree;
         public void Init(IAIHost host)
         {
+#if AKIAI_TASK_JSON_SERIALIZATION
+            instanceTree = ScriptableObject.CreateInstance<BehaviorTreeSO>();
+            instanceTree.Deserialize(behaviorTreeSerializeData.text);
+#else
             instanceTree = Object.Instantiate(behaviorTree);
+#endif
             foreach (var variable in instanceTree.SharedVariables)
                 variable.MapTo(host.BlackBoard);
             instanceTree.Init(host.Object);

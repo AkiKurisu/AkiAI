@@ -41,17 +41,20 @@ AkiAI 是一个个人向、实验性的游戏AI框架，可用于设计和开发
 ```C#
 public interface ICustomContext : IAIContext
 {
+    //Your custom gamePlay components
     NavMeshAgent NavAgent { get; }
 }
-public class CustomAgent : AIAgent<ICustomContext>, ICustomContext
+public class CustomAgent : AIAgent<ICustomContext>
 {
+    public override ICustomContext TContext => YourContext;
 }
 ```
-2. 创建TaskID静态类
+2. 创建TaskID类添加`TaskIDHostAttribute`用于存放Task的索引名称
 ```C#
 [TaskIDHost]
 public class CustomTasks
 {
+    //TaskIDHostAttribute provides a popup menu in inspector
     public static string TaskA = "TaskA";
     public static string TaskB = "TaskB";
 }
@@ -63,7 +66,7 @@ public abstract class CustomAction : AIAction<ICustomContext> { }
 public abstract class CustomGoal : AIGoal<ICustomContext> { }
 ```
 
-4. Action中控制Task
+4. Action中控制Task或在Action中执行行为
 ```C#
 public class DoSomething : CustomAction
 {
@@ -79,13 +82,19 @@ public class DoSomething : CustomAction
     {
         return 5;
     }
+    //Called after action is selected
     protected sealed override void OnActivateDerived()
     {
         Host.GetTask(CustomTasks.TaskA).Start();
     }
+    //Called after action is unselected
     protected sealed override void OnDeactivateDerived()
     {
         Host.GetTask(CustomTasks.TaskA).Stop();
+    }
+    public sealed override void OnTick() 
+    {
+        //Do something in action
     }
 }
 ```

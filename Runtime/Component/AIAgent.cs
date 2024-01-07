@@ -54,7 +54,7 @@ namespace Kurisu.AkiAI
         protected virtual void OnUpdate() { }
         public virtual void EnableAI()
         {
-            planner.enabled = true;
+            if (planner) planner.enabled = true;
             IsAIEnabled = true;
             foreach (var task in taskMap.Values)
             {
@@ -64,7 +64,7 @@ namespace Kurisu.AkiAI
         }
         public virtual void DisableAI()
         {
-            planner.enabled = false;
+            if (planner) planner.enabled = false;
             IsAIEnabled = false;
             foreach (var task in taskMap.Values)
             {

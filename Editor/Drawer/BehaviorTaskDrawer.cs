@@ -24,7 +24,11 @@ namespace Kurisu.AkiAI.Editor
                 EditorGUI.PropertyField(rect, property.FindPropertyRelative("taskID"));
                 rect.y += rect.height + EditorGUIUtility.standardVerticalSpacing;
             }
+#if AKIAI_TASK_JSON_SERIALIZATION
+            EditorGUI.PropertyField(rect, property.FindPropertyRelative("behaviorTreeSerializeData"));
+#else
             EditorGUI.PropertyField(rect, property.FindPropertyRelative("behaviorTree"));
+#endif
             rect.y += rect.height + EditorGUIUtility.standardVerticalSpacing;
             GUI.enabled = Application.isPlaying;
             var task = ReflectionUtility.GetTargetObjectWithProperty(property) as BehaviorTask;
