@@ -22,5 +22,12 @@ namespace Kurisu.AkiAI
         /// <param name="key"></param>
         /// <param name="value"></param>
         SharedVariable<Vector3> SetVector3(string key, Vector3 value);
+        /// <summary>
+        /// Modify string value in blackboard
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        SharedVariable<string> SetString(string key, string value);
     }
 }

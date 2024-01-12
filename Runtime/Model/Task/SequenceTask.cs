@@ -1,11 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 namespace Kurisu.AkiAI
 {
     /// <summary>
     /// Sequence task running outside of agent
     /// </summary>
-    public class SequenceTask : ITask
+    public class SequenceTask : ITask, IEnumerable<ITask>
     {
         public Action OnEnd;
         private readonly Queue<ITask> tasks = new();
@@ -69,6 +70,20 @@ namespace Kurisu.AkiAI
                 Status = TaskStatus.Disabled;
                 OnEnd?.Invoke();
             }
+        }
+        public void Abort()
+        {
+            Status = TaskStatus.Disabled;
+        }
+
+        public IEnumerator<ITask> GetEnumerator()
+        {
+            return tasks.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return tasks.GetEnumerator();
         }
     }
 }

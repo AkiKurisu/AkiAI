@@ -41,5 +41,15 @@ namespace Kurisu.AkiAI
             variable.Value = value;
             return variable;
         }
+        public SharedVariable<string> SetString(string key, string value)
+        {
+            if (!this.TryGetSharedString(key, out SharedVariable<string> variable))
+            {
+                variable = new SharedString() { Name = key };
+                sharedVariables.Add(variable);
+            }
+            variable.Value = value;
+            return variable;
+        }
     }
 }
