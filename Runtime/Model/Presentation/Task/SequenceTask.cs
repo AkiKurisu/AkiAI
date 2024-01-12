@@ -8,7 +8,7 @@ namespace Kurisu.AkiAI
     /// </summary>
     public class SequenceTask : ITask, IEnumerable<ITask>
     {
-        public Action OnEnd;
+        public event Action OnEnd;
         private readonly Queue<ITask> tasks = new();
         public TaskStatus Status { get; private set; }
         public SequenceTask()
@@ -62,6 +62,11 @@ namespace Kurisu.AkiAI
                     {
                         Status = TaskStatus.Disabled;
                         OnEnd?.Invoke();
+                        OnEnd = null;
+                    }
+                    else
+                    {
+                        Tick();
                     }
                 }
             }
@@ -69,18 +74,18 @@ namespace Kurisu.AkiAI
             {
                 Status = TaskStatus.Disabled;
                 OnEnd?.Invoke();
+                OnEnd = null;
             }
         }
         public void Abort()
         {
             Status = TaskStatus.Disabled;
+            OnEnd = null;
         }
-
         public IEnumerator<ITask> GetEnumerator()
         {
             return tasks.GetEnumerator();
         }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
             return tasks.GetEnumerator();
