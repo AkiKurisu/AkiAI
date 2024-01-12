@@ -50,6 +50,8 @@ namespace Kurisu.AkiAI
         {
             sequenceTask?.Abort();
             sequenceTask = null;
+            OnAbort();
         }
+        protected virtual void OnAbort() { }
     }
 }

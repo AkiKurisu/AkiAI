@@ -19,28 +19,49 @@ namespace Kurisu.AkiAI.Playables
         private float fadeOutTime = 0f;
         public AnimationSequenceBuilder(Animator animator)
         {
-            playableGraph = PlayableGraph.Create($"{animator.name}_sequence");
+            playableGraph = PlayableGraph.Create($"{animator.name}_AnimationSequence_{GetHashCode()}");
             playableOutput = AnimationPlayableOutput.Create(playableGraph, "Animation", animator);
             mixerPointer = rootMixer = AnimationMixerPlayable.Create(playableGraph, 2);
             playableOutput.SetSourcePlayable(mixerPointer);
         }
+        /// <summary>
+        /// Append an animation clip
+        /// </summary>
+        /// <param name="animationClip">Clip to play</param>
+        /// <param name="fadeIn">FadeIn time</param>
+        /// <returns></returns>
         public AnimationSequenceBuilder Append(AnimationClip animationClip, float fadeIn)
+        {
+            return Append(animationClip, animationClip.length, fadeIn);
+        }
+        /// <summary>
+        /// Append an animation clip
+        /// </summary>
+        /// <param name="animationClip">Clip to play</param>
+        /// <param name="duration">Duration can be infinity as loop</param>
+        /// <param name="fadeIn">FadeIn time</param>
+        /// <returns></returns>
+        public AnimationSequenceBuilder Append(AnimationClip animationClip, float duration, float fadeIn)
         {
             if (IsBuilt()) return this;
             if (!IsValid()) return this;
-            var duration = animationClip.length;
             var clipPlayable = AnimationClipPlayable.Create(playableGraph, animationClip);
             clipPlayable.SetDuration(duration);
             clipPlayable.SetSpeed(0d);
+            return AppendInternal(clipPlayable, fadeIn);
+        }
+        private AnimationSequenceBuilder AppendInternal(Playable clipPlayable, float fadeIn)
+        {
             if (mixerPointer.GetInput(1).IsNull())
             {
                 playableGraph.Connect(clipPlayable, 0, mixerPointer, 1);
             }
             else
             {
+                // Layout as a binary tree
                 var newMixer = AnimationMixerPlayable.Create(playableGraph, 2);
                 var right = mixerPointer.GetInput(1);
-                taskBuffer.Add(new WaitPlayableTask(right, duration - fadeIn));
+                taskBuffer.Add(new WaitPlayableTask(right, right.GetDuration() - fadeIn));
                 //Disconnect leaf
                 playableGraph.Disconnect(mixerPointer, 1);
                 //Right=>left
@@ -55,6 +76,16 @@ namespace Kurisu.AkiAI.Playables
             mixerPointer.SetInputWeight(0, 1);
             mixerPointer.SetInputWeight(1, 0);
             taskBuffer.Add(new FadeInTask(mixerPointer, clipPlayable, fadeIn));
+            return this;
+        }
+        /// <summary>
+        /// Set last playable duration
+        /// </summary>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        public AnimationSequenceBuilder SetDuration(double duration)
+        {
+            mixerPointer.GetInput(1).SetDuration(duration);
             return this;
         }
         /// <summary>
@@ -111,20 +142,36 @@ namespace Kurisu.AkiAI.Playables
             sequence = sequenceTask;
             taskBuffer.Clear();
         }
+        /// <summary>
+        /// Set animation sequence fadeOut time, default is 0
+        /// </summary>
+        /// <param name="fadeOut"></param>
+        /// <returns></returns>
         public AnimationSequenceBuilder SetFadeOut(float fadeOut)
         {
             if (IsBuilt()) return this;
             fadeOutTime = fadeOut;
             return this;
         }
+        /// <summary>
+        /// Whether animation sequence is already built
+        /// </summary>
+        /// <returns></returns>
         public bool IsBuilt()
         {
             return sequence != null;
         }
+        /// <summary>
+        /// Whether animation sequence is valid
+        /// </summary>
+        /// <returns></returns>
         public bool IsValid()
         {
             return playableGraph.IsValid();
         }
+        /// <summary>
+        /// Dispose animation sequence while destroying inner playable graph
+        /// </summary> <summary>
         public void Dispose()
         {
             sequence?.Abort();
