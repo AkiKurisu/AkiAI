@@ -35,6 +35,7 @@ namespace Kurisu.AkiAI
 #endif
             sequenceTask?.Abort();
             sequenceTask = new SequenceTask(tasks, EndProxy);
+            sequenceTask.Run();
         }
         protected void EndProxy()
         {

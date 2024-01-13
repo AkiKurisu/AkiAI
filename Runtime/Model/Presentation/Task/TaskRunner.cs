@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace Kurisu.AkiAI
 {
-    public class TaskRunner : MonoBehaviour
+    internal class TaskRunner : MonoBehaviour
     {
         private readonly List<ITask> _tasks = new();
         private readonly List<ITask> _tasksToAdd = new();
@@ -21,7 +21,9 @@ namespace Kurisu.AkiAI
         }
         public static void RegisterTask(ITask task)
         {
-            GetInstance()._tasksToAdd.Add(task);
+            var instance = GetInstance();
+            if (instance._tasks.Contains(task)) return;
+            instance._tasksToAdd.Add(task);
         }
 
         private void Update()

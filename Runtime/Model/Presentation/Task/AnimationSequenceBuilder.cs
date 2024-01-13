@@ -89,21 +89,21 @@ namespace Kurisu.AkiAI.Playables
             return this;
         }
         /// <summary>
-        /// Build animation sequence
+        /// Build an animation sequence
         /// </summary>
-        public void Build()
+        public SequenceTask Build()
         {
             if (IsBuilt())
             {
                 Debug.LogWarning("Graph is already built, rebuild is not allowed");
-                return;
+                return sequence;
             }
             if (!IsValid())
             {
                 Debug.LogWarning("Graph is already destroyed before build");
-                return;
+                return sequence;
             }
-            BuildInternal(new SequenceTask(Dispose));
+            return BuildInternal(new SequenceTask(Dispose));
         }
         /// <summary>
         /// Append animation sequence after an existed sequence
@@ -124,7 +124,7 @@ namespace Kurisu.AkiAI.Playables
             BuildInternal(sequenceTask);
             sequenceTask.Append(new CallBackTask(Dispose));
         }
-        private void BuildInternal(SequenceTask sequenceTask)
+        private SequenceTask BuildInternal(SequenceTask sequenceTask)
         {
             if (!playableGraph.IsPlaying())
             {
@@ -141,6 +141,7 @@ namespace Kurisu.AkiAI.Playables
             }
             sequence = sequenceTask;
             taskBuffer.Clear();
+            return sequence;
         }
         /// <summary>
         /// Set animation sequence fadeOut time, default is 0

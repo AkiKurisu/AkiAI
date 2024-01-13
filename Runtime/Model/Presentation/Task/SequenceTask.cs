@@ -8,33 +8,27 @@ namespace Kurisu.AkiAI
     /// </summary>
     public class SequenceTask : ITask, IEnumerable<ITask>
     {
-        public event Action OnEnd;
+        public event Action OnCompleted;
         private readonly Queue<ITask> tasks = new();
-        public TaskStatus Status { get; private set; }
+        public TaskStatus Status { get; private set; } = TaskStatus.Pending;
         public SequenceTask()
         {
-            OnEnd = null;
-            Status = TaskStatus.Pending;
+            OnCompleted = null;
         }
         public SequenceTask(Action callBack)
         {
-            OnEnd = callBack;
-            Status = TaskStatus.Pending;
+            OnCompleted = callBack;
         }
         public SequenceTask(ITask firstTask, Action callBack)
         {
-            OnEnd = callBack;
+            OnCompleted = callBack;
             tasks.Enqueue(firstTask);
-            Status = TaskStatus.Enabled;
-            TaskRunner.RegisterTask(this);
         }
         public SequenceTask(IReadOnlyList<ITask> sequence, Action callBack)
         {
-            OnEnd = callBack;
+            OnCompleted = callBack;
             foreach (var task in sequence)
                 tasks.Enqueue(task);
-            Status = TaskStatus.Enabled;
-            TaskRunner.RegisterTask(this);
         }
         /// <summary>
         /// Append a task to the end of sequence
@@ -43,11 +37,12 @@ namespace Kurisu.AkiAI
         public SequenceTask Append(ITask task)
         {
             tasks.Enqueue(task);
-            if (Status == TaskStatus.Pending)
-            {
-                Status = TaskStatus.Enabled;
-                TaskRunner.RegisterTask(this);
-            }
+            return this;
+        }
+        public SequenceTask AppendRange(IEnumerable<ITask> enumerable)
+        {
+            foreach (var task in enumerable)
+                tasks.Enqueue(task);
             return this;
         }
         public void Tick()
@@ -61,8 +56,8 @@ namespace Kurisu.AkiAI
                     if (tasks.Count == 0)
                     {
                         Status = TaskStatus.Disabled;
-                        OnEnd?.Invoke();
-                        OnEnd = null;
+                        OnCompleted?.Invoke();
+                        OnCompleted = null;
                     }
                     else
                     {
@@ -73,14 +68,14 @@ namespace Kurisu.AkiAI
             else
             {
                 Status = TaskStatus.Disabled;
-                OnEnd?.Invoke();
-                OnEnd = null;
+                OnCompleted?.Invoke();
+                OnCompleted = null;
             }
         }
         public void Abort()
         {
             Status = TaskStatus.Disabled;
-            OnEnd = null;
+            OnCompleted = null;
         }
         public IEnumerator<ITask> GetEnumerator()
         {
@@ -89,6 +84,24 @@ namespace Kurisu.AkiAI
         IEnumerator IEnumerable.GetEnumerator()
         {
             return tasks.GetEnumerator();
+        }
+        public SequenceTask AppendCallBack(Action callBack)
+        {
+            OnCompleted += callBack;
+            return this;
+        }
+        /// <summary>
+        /// Call to run task sequence in a dedicate runner
+        /// </summary>
+        /// <returns></returns>
+        public SequenceTask Run()
+        {
+            if (Status == TaskStatus.Pending)
+            {
+                Status = TaskStatus.Enabled;
+                TaskRunner.RegisterTask(this);
+            }
+            return this;
         }
     }
 }
