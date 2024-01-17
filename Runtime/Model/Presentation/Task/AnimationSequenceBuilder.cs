@@ -171,11 +171,11 @@ namespace Kurisu.AkiAI.Playables
             return playableGraph.IsValid();
         }
         /// <summary>
-        /// Dispose animation sequence while destroying inner playable graph
+        /// Dispose internal playable graph
         /// </summary> <summary>
         public void Dispose()
         {
-            sequence?.Abort();
+            sequence = null;
             if (playableGraph.IsValid())
             {
                 playableGraph.Destroy();
