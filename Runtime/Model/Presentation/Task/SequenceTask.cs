@@ -85,10 +85,14 @@ namespace Kurisu.AkiAI
         {
             return tasks.GetEnumerator();
         }
+        /// <summary>
+        /// Append a call back after current last action in the sequence
+        /// </summary>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public SequenceTask AppendCallBack(Action callBack)
         {
-            OnCompleted += callBack;
-            return this;
+            return Append(new CallBackTask(callBack));
         }
         /// <summary>
         /// Call to run task sequence in a dedicate runner

@@ -22,8 +22,11 @@ namespace Kurisu.AkiAI
         public static void RegisterTask(ITask task)
         {
             var instance = GetInstance();
-            if (instance._tasks.Contains(task)) return;
-            instance._tasksToAdd.Add(task);
+            if (instance)
+            {
+                if (instance._tasks.Contains(task)) return;
+                instance._tasksToAdd.Add(task);
+            }
         }
 
         private void Update()
