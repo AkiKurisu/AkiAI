@@ -29,5 +29,12 @@ namespace Kurisu.AkiAI
         /// <param name="value"></param>
         /// <returns></returns>
         SharedVariable<string> SetString(string key, string value);
+        /// <summary>
+        /// Modify bool value in blackboard
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        SharedVariable<bool> SetBool(string key, bool value);
     }
 }

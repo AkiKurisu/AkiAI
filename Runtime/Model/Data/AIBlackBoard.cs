@@ -41,6 +41,16 @@ namespace Kurisu.AkiAI
             variable.Value = value;
             return variable;
         }
+        public SharedVariable<bool> SetBool(string key, bool value)
+        {
+            if (!this.TryGetSharedVariable(key, out SharedVariable<bool> variable))
+            {
+                variable = new SharedBool() { Name = key };
+                sharedVariables.Add(variable);
+            }
+            variable.Value = value;
+            return variable;
+        }
         public SharedVariable<string> SetString(string key, string value)
         {
             if (!this.TryGetSharedString(key, out SharedVariable<string> variable))

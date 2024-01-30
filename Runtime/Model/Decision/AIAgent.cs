@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Kurisu.GOAP;
+using System;
 namespace Kurisu.AkiAI
 {
     [RequireComponent(typeof(AIBlackBoard))]
@@ -43,7 +44,14 @@ namespace Kurisu.AkiAI
             TickTasks();
             OnUpdate();
         }
-
+        protected virtual void OnDestroy()
+        {
+            foreach (var task in taskMap.Values)
+            {
+                if (task is IDisposable disposable)
+                    disposable.Dispose();
+            }
+        }
         private void TickTasks()
         {
             foreach (var task in taskMap.Values)
