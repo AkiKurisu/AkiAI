@@ -5,6 +5,7 @@ using Kurisu.GOAP;
 using System;
 namespace Kurisu.AkiAI
 {
+    [RequireComponent(typeof(WorldState))]
     [RequireComponent(typeof(AIBlackBoard))]
     [RequireComponent(typeof(GOAPPlanner))]
     public abstract class AIAgent : MonoBehaviour, IAIHost
@@ -14,9 +15,8 @@ namespace Kurisu.AkiAI
         protected GOAPSet DataSet => dataSet;
         private GOAPPlanner planner;
         public GOAPPlanner Planner => planner;
-        private readonly Dictionary<string, IAITask> taskMap = new();
-        protected Dictionary<string, IAITask> TaskMap => taskMap;
-        public bool IsAIEnabled { get; private set; }
+        protected Dictionary<string, IAITask> TaskMap { get; } = new();
+        public bool IsAIEnabled { get; protected set; }
         public virtual Transform Transform => transform;
         public virtual GameObject Object => gameObject;
         private AIBlackBoard blackBoard;
@@ -38,7 +38,7 @@ namespace Kurisu.AkiAI
         }
         protected virtual void OnStart() { }
         protected abstract void SetupGOAP();
-        protected void Update()
+        protected virtual void Update()
         {
             if (!IsAIEnabled) return;
             TickTasks();
@@ -46,15 +46,15 @@ namespace Kurisu.AkiAI
         }
         protected virtual void OnDestroy()
         {
-            foreach (var task in taskMap.Values)
+            foreach (var task in TaskMap.Values)
             {
                 if (task is IDisposable disposable)
                     disposable.Dispose();
             }
         }
-        private void TickTasks()
+        protected void TickTasks()
         {
-            foreach (var task in taskMap.Values)
+            foreach (var task in TaskMap.Values)
             {
                 if (task.Status == TaskStatus.Enabled) task.Tick();
             }
@@ -62,9 +62,9 @@ namespace Kurisu.AkiAI
         protected virtual void OnUpdate() { }
         public virtual void EnableAI()
         {
-            if (planner) planner.enabled = true;
+            planner.enabled = true;
             IsAIEnabled = true;
-            foreach (var task in taskMap.Values)
+            foreach (var task in TaskMap.Values)
             {
                 if (task.IsPersistent || task.Status == TaskStatus.Pending)
                     task.Start();
@@ -72,9 +72,9 @@ namespace Kurisu.AkiAI
         }
         public virtual void DisableAI()
         {
-            if (planner) planner.enabled = false;
+            planner.enabled = false;
             IsAIEnabled = false;
-            foreach (var task in taskMap.Values)
+            foreach (var task in TaskMap.Values)
             {
                 //Pend running tasks
                 if (task.Status == TaskStatus.Enabled)
@@ -91,17 +91,17 @@ namespace Kurisu.AkiAI
         }
         public IAITask GetTask(string taskID)
         {
-            return taskMap[taskID];
+            return TaskMap[taskID];
         }
         public void AddTask(IAITask task)
         {
-            if (!task.IsPersistent && taskMap.ContainsKey(task.TaskID))
+            if (!task.IsPersistent && TaskMap.ContainsKey(task.TaskID))
             {
                 Debug.LogWarning($"Already contained task with same id: {task.TaskID}");
                 return;
             }
             task.Init(this);
-            taskMap.Add(task.TaskID, task);
+            TaskMap.Add(task.TaskID, task);
             if (task.IsPersistent && IsAIEnabled)
             {
                 task.Start();
@@ -109,7 +109,7 @@ namespace Kurisu.AkiAI
         }
         public IEnumerable<IAITask> GetAllTasks()
         {
-            return taskMap.Values;
+            return TaskMap.Values;
         }
     }
     /// <summary>
@@ -132,8 +132,7 @@ namespace Kurisu.AkiAI
             {
                 action.Setup(this);
             }
-            Planner.InjectGoals(goals);
-            Planner.InjectActions(actions);
+            Planner.SetGoalsAndActions(goals, actions);
         }
     }
     /// <summary>
