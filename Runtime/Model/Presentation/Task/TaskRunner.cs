@@ -14,7 +14,7 @@ namespace Kurisu.AkiAI
 #endif
             if (instance == null)
             {
-                GameObject managerObject = new() { name = nameof(TaskRunner), hideFlags = HideFlags.DontSave };
+                GameObject managerObject = new() { name = nameof(TaskRunner) };
                 instance = managerObject.AddComponent<TaskRunner>();
             }
             return instance;
