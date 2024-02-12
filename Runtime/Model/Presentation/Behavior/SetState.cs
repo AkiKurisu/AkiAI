@@ -15,14 +15,6 @@ namespace Kurisu.AkiAI
         private SharedBool value;
         [SerializeField]
         private SharedBool isGlobal;
-        public override void Awake()
-        {
-            InitVariable(worldState);
-            InitVariable(stateName);
-            InitVariable(value);
-            InitVariable(isGlobal);
-        }
-
         protected override Status OnUpdate()
         {
             worldState.Value.SetState(stateName.Value, value.Value, isGlobal.Value);
