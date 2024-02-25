@@ -14,15 +14,21 @@ namespace Kurisu.AkiAI
         public void Stop()
         {
             Status = TaskStatus.Disabled;
+            OnStop();
         }
+        protected virtual void OnStop() { }
         public void Start()
         {
             Status = TaskStatus.Enabled;
+            OnStart();
         }
+        protected virtual void OnStart() { }
         public void Pause()
         {
             Status = TaskStatus.Pending;
+            OnPause();
         }
+        protected virtual void OnPause() { }
         #endregion
     }
     /// <summary>

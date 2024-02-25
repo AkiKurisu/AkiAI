@@ -75,7 +75,7 @@ namespace Kurisu.AkiAI.Playables
             }
             mixerPointer.SetInputWeight(0, 1);
             mixerPointer.SetInputWeight(1, 0);
-            taskBuffer.Add(new FadeInTask(mixerPointer, clipPlayable, fadeIn));
+            taskBuffer.Add(new FadeInPlayableTask(mixerPointer, clipPlayable, fadeIn));
             return this;
         }
         /// <summary>
@@ -137,11 +137,20 @@ namespace Kurisu.AkiAI.Playables
             sequenceTask.Append(new WaitPlayableTask(right, right.GetAnimationClip().length - fadeOutTime));
             if (fadeOutTime > 0)
             {
-                sequenceTask.Append(new FadeOutTask(rootMixer, right, fadeOutTime));
+                sequenceTask.Append(new FadeOutPlayableTask(rootMixer, right, fadeOutTime));
             }
             sequence = sequenceTask;
             taskBuffer.Clear();
             return sequence;
+        }
+        /// <summary>
+        /// Build an animation sequence to force fade out the playable, useful when your clip is loop and you want to crossfade it
+        /// </summary>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public SequenceTask BuildFadeOut(Action callBack)
+        {
+            return new SequenceTask(new AbsolutelyFadeOutPlayableTask(rootMixer, fadeOutTime), callBack);
         }
         /// <summary>
         /// Set animation sequence fadeOut time, default is 0
